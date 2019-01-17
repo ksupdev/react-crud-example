@@ -1,0 +1,6 @@
+{
+  "short_name": "React CRUD",
+  "name": "CRUD React Example",
+  "start_url": ".",
+  "display": "standalone"
+}
