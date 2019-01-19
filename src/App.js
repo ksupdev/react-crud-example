@@ -1,49 +1,47 @@
 import React, {Component} from 'react';
 import UpdateCreate from "./UpdateCreate";
 import ReadDelete from "./ReadDelete";
+import DummyUserAPI from "./DummyUserAPI";
 
 class App extends Component {
   constructor(props) {
     super(props);
 
+    this._api = new DummyUserAPI();
     this.emptyUser = {
       id: null, name: '',
     };
     this.state = {
-      users: [
-        {id: 1, name: 'Bill'},
-        {id: 2, name: 'Kate'},
-      ],
+      users: [],
       editingUser: this.emptyUser,
     };
   }
 
+  componentDidMount() {
+    const users = this._api.list();
+    this.setState({users: users})
+  }
+
   createUser = (user) => {
     const {users} = this.state;
-    if (!user.id) {
-      let userIds = users.map(user => user.id);
-      if (userIds.length > 0) {
-        user.id = Math.max(...userIds) + 1;
-      } else {
-        user.id = 1;
-      }
-    }
+    user = this._api.create(user);
     this.setState({users: [...users, user]});
     this.resetUserUpdate();
   };
 
   updateUser = (user) => {
+    user = this._api.update(user);
     // we don't use here a chain of `deleteUser, createUser` cause `this.setState` does not immediately update state
     // see docu about it https://reactjs.org/docs/react-component.html#setstate
-    const newStateUsers = this.state.users.filter((stateUser) => {
+    const otherUsers = this.state.users.filter((stateUser) => {
       return stateUser.id !== user.id;
     });
-    newStateUsers.push(user);
-    this.setState({users: newStateUsers});
+    this.setState({users: [...otherUsers, user]});
     this.resetUserUpdate();
   };
 
   deleteUser = (userId) => {
+    this._api.delete(userId);
     const {users} = this.state;
     this.setState({
       users: users.filter((user) => {
