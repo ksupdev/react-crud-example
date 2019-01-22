@@ -1,4 +1,15 @@
 import React, {Component} from 'react';
+import {TextField, Button, withStyles} from "@material-ui/core";
+
+
+const styles = ({spacing: {unit}}) => ({
+  form: {
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'space-evenly',
+    marginBottom: unit
+  }
+});
 
 class UpdateCreate extends Component {
 
@@ -36,24 +47,32 @@ class UpdateCreate extends Component {
 
   render() {
     const user = this.state;
+    const {classes} = this.props;
 
     return (
-      <form>
-        <label>Name</label>
-        <input
-          type="text"
+      <form className={classes.form}>
+        <TextField
           name="name"
+          label="Username"
           value={user.name}
           onChange={this.onInputChange}
+          margin="normal"
         />
         {user.id ?
-          <input key="update" type="button" value="Update" onClick={this.onUpdate}/>
-          : <input type="button" value="Create" onClick={this.onUpdate}/>
+          <Button key="update" type="submit" color="primary" variant="contained" onClick={this.onUpdate}>
+            Update
+          </Button>
+          :
+          <Button key="create" type="submit" color="primary" variant="contained" onClick={this.onUpdate}>
+            Create
+          </Button>
         }
-        <input key="cancel" type="button" value="Cancel" onClick={this.onCancel}/>
+        <Button key="cancel" type="submit" color="primary" variant="contained" onClick={this.onCancel}>
+          Cancel
+        </Button>
       </form>
     );
   }
 }
 
-export default UpdateCreate;
+export default withStyles(styles)(UpdateCreate);

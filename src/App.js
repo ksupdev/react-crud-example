@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {Link, matchPath, Route, Switch} from 'react-router-dom';
 import Media from 'react-media';
+import {Button} from '@material-ui/core';
+
 import DummyUserAPI from './DummyUserAPI';
 import ReadDelete from './ReadDelete';
 import UpdateCreate from './UpdateCreate';
@@ -82,7 +84,9 @@ class App extends Component {
         <Route exact path="/" render={props =>
           <React.Fragment>
             <ReadDelete users={users} onDelete={this.deleteUser} {...props}/>
-            <Link to="/update">Create New</Link>
+            <Button color="primary" variant="contained" component={Link} to="/update">
+              Create New
+            </Button>
           </React.Fragment>
         }
         />
