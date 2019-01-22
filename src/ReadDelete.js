@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 
 class ReadDelete extends Component {
   render() {
@@ -8,8 +9,8 @@ class ReadDelete extends Component {
         <tr key={user.id}>
           <td>{user.name}</td>
           <td>
-            <button onClick={() => props.onUserUpdate(user.id)}>Edit</button>
-            <button onClick={() => props.onUserDelete(user.id)}>Delete</button>
+            <Link to={`/update/${user.id}`}>Edit</Link>
+            <button onClick={() => props.onDelete(user.id)}>Delete</button>
           </td>
         </tr>
       );

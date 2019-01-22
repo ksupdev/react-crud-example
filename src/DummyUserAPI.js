@@ -4,7 +4,6 @@ class DummyUserAPI {
 
   constructor() {
     this._users = DummyUserAPI._restoreUsers();
-    console.log(this._users);
     if (!this._users.length) {
       this.create({id: 1, name: 'John'});
       this.create({id: 2, name: 'Anna'});

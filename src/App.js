@@ -1,32 +1,35 @@
 import React, {Component} from 'react';
-import UpdateCreate from "./UpdateCreate";
-import ReadDelete from "./ReadDelete";
-import DummyUserAPI from "./DummyUserAPI";
+import {Link, matchPath, Route, Switch} from 'react-router-dom';
+import Media from 'react-media';
+import DummyUserAPI from './DummyUserAPI';
+import ReadDelete from './ReadDelete';
+import UpdateCreate from './UpdateCreate';
 
 class App extends Component {
   constructor(props) {
     super(props);
 
     this._api = new DummyUserAPI();
-    this.emptyUser = {
-      id: null, name: '',
-    };
     this.state = {
-      users: [],
-      editingUser: this.emptyUser,
+      users: this._api.list(),
     };
   }
 
-  componentDidMount() {
-    const users = this._api.list();
-    this.setState({users: users})
-  }
+  findUser = (userId) => {
+    if (userId) {
+      userId = parseInt(userId);
+      const user = this.state.users.find(user => user.id === userId);
+      if (user) {
+        return user;
+      }
+    }
+    return null;
+  };
 
   createUser = (user) => {
     const {users} = this.state;
     user = this._api.create(user);
     this.setState({users: [...users, user]});
-    this.resetUserUpdate();
   };
 
   updateUser = (user) => {
@@ -37,7 +40,6 @@ class App extends Component {
       return stateUser.id !== user.id;
     });
     this.setState({users: [...otherUsers, user]});
-    this.resetUserUpdate();
   };
 
   deleteUser = (userId) => {
@@ -50,43 +52,67 @@ class App extends Component {
     });
   };
 
+  onUserUpdate = (user) => {
+    if (user.id) {
+      this.updateUser(user);
+    } else {
+      this.createUser(user);
+    }
+    this.resetUserUpdate();
+  };
+
   resetUserUpdate = () => {
-    this.setState({editingUser: this.emptyUser});
-  };
-
-  setUserToUpdate = (userId) => {
-    const user = this.state.users.find((user) => user.id === userId);
-    const editingUser = Object.assign({}, user);
-    this.setState({editingUser: editingUser});
-  };
-
-  onInputChange = (event) => {
-    const target = event.target;
-    const value = target.value;
-    const name = target.name;
-
-    const editingUser = Object.assign({}, this.state.editingUser);
-    editingUser[name] = value;
-    this.setState({editingUser: editingUser});
+    this.props.history.push('/');
   };
 
   render() {
+    return (<Media query={{maxWidth: 599}}>
+      {screenIsSmall => screenIsSmall ?
+        this.renderSmallScreen()
+        : this.renderBigScreen()
+      }
+    </Media>);
+  }
+
+  renderSmallScreen() {
+    const {users} = this.state;
+
     return (
-      <div>
-        <header>
-          React CRUD Example
-        </header>
-        <ReadDelete
-          users={this.state.users}
-          onUserDelete={this.deleteUser} onUserUpdate={this.setUserToUpdate}
+      <Switch>
+        <Route exact path="/" render={props =>
+          <React.Fragment>
+            <ReadDelete users={users} onDelete={this.deleteUser} {...props}/>
+            <Link to="/update">Create New</Link>
+          </React.Fragment>
+        }
         />
+        <Route path="/update/:id?" render={props =>
+          <UpdateCreate
+            user={this.findUser(props.match.params.id)}
+            onUpdate={this.onUserUpdate} onCancel={this.resetUserUpdate}
+          />
+        }/>
+      </Switch>
+    )
+  }
+
+  renderBigScreen() {
+    const {users} = this.state;
+    let updateUserId;
+    const updateMatch = matchPath(this.props.match.url, {path: '/update/:id', exact: true});
+    if (updateMatch) {
+      updateUserId = parseInt(updateMatch.params.id);
+    }
+
+    return (
+      <React.Fragment>
+        <ReadDelete users={users} onDelete={this.deleteUser}/>
         <UpdateCreate
-          user={this.state.editingUser}
-          onUserCreate={this.createUser} onUserUpdate={this.updateUser}
-          cancelUserUpdate={this.resetUserUpdate} onInputChange={this.onInputChange}
+          user={this.findUser(updateUserId)} key={updateUserId}
+          onUpdate={this.onUserUpdate} onCancel={this.resetUserUpdate}
         />
-      </div>
-    );
+      </React.Fragment>
+    )
   }
 }
 
