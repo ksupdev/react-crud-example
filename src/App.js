@@ -2,63 +2,19 @@ import React, {Component} from 'react';
 import {Link, matchPath, Route, Switch} from 'react-router-dom';
 import Media from 'react-media';
 import {Button} from '@material-ui/core';
+import {connect} from 'react-redux';
 
-import DummyUserAPI from './DummyUserAPI';
-import ReadDelete from './ReadDelete';
-import UpdateCreate from './UpdateCreate';
+import ReadDelete from './components/ReadDelete';
+import UpdateCreate from './components/UpdateCreate';
+import {createUser, updateUser} from './redux/actions';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this._api = new DummyUserAPI();
-    this.state = {
-      users: this._api.list(),
-    };
-  }
-
-  findUser = (userId) => {
-    if (userId) {
-      userId = parseInt(userId);
-      const user = this.state.users.find(user => user.id === userId);
-      if (user) {
-        return user;
-      }
-    }
-    return null;
-  };
-
-  createUser = (user) => {
-    const {users} = this.state;
-    user = this._api.create(user);
-    this.setState({users: [...users, user]});
-  };
-
-  updateUser = (user) => {
-    user = this._api.update(user);
-    // we don't use here a chain of `deleteUser, createUser` cause `this.setState` does not immediately update state
-    // see docu about it https://reactjs.org/docs/react-component.html#setstate
-    const otherUsers = this.state.users.filter((stateUser) => {
-      return stateUser.id !== user.id;
-    });
-    this.setState({users: [...otherUsers, user]});
-  };
-
-  deleteUser = (userId) => {
-    this._api.delete(userId);
-    const {users} = this.state;
-    this.setState({
-      users: users.filter((user) => {
-        return user.id !== userId;
-      })
-    });
-  };
 
   onUserUpdate = (user) => {
     if (user.id) {
-      this.updateUser(user);
+      this.props.updateUser(user);
     } else {
-      this.createUser(user);
+      this.props.createUser(user);
     }
     this.resetUserUpdate();
   };
@@ -77,13 +33,11 @@ class App extends Component {
   }
 
   renderSmallScreen() {
-    const {users} = this.state;
-
     return (
       <Switch>
         <Route exact path="/" render={props =>
           <React.Fragment>
-            <ReadDelete users={users} onDelete={this.deleteUser} {...props}/>
+            <ReadDelete {...props}/>
             <Button color="primary" variant="contained" component={Link} to="/update">
               Create New
             </Button>
@@ -92,7 +46,7 @@ class App extends Component {
         />
         <Route path="/update/:id?" render={props =>
           <UpdateCreate
-            user={this.findUser(props.match.params.id)}
+            userId={parseInt(props.match.params.id)}
             onUpdate={this.onUserUpdate} onCancel={this.resetUserUpdate}
           />
         }/>
@@ -101,7 +55,6 @@ class App extends Component {
   }
 
   renderBigScreen() {
-    const {users} = this.state;
     let updateUserId;
     const updateMatch = matchPath(this.props.match.url, {path: '/update/:id', exact: true});
     if (updateMatch) {
@@ -110,9 +63,9 @@ class App extends Component {
 
     return (
       <React.Fragment>
-        <ReadDelete users={users} onDelete={this.deleteUser}/>
+        <ReadDelete/>
         <UpdateCreate
-          user={this.findUser(updateUserId)} key={updateUserId}
+          userId={updateUserId} key={updateUserId}
           onUpdate={this.onUserUpdate} onCancel={this.resetUserUpdate}
         />
       </React.Fragment>
@@ -120,4 +73,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default connect(null, {createUser, updateUser})(App);

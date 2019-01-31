@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
-import {TextField, Button, withStyles} from "@material-ui/core";
+import {TextField, Button, withStyles} from '@material-ui/core';
+import {connect} from 'react-redux';
+import {getUserById} from '../redux/selectors';
 
 
 const styles = ({spacing: {unit}}) => ({
@@ -35,12 +37,14 @@ class UpdateCreate extends Component {
     this.setState({[name]: value});
   };
 
-  onUpdate = () => {
+  onUpdate = (e) => {
+    e.preventDefault();
     this.props.onUpdate(this.state);
     this.setState(this.emptyState);
   };
 
-  onCancel = () => {
+  onCancel = (e) => {
+    e.preventDefault();
     this.props.onCancel();
     this.setState(this.emptyState);
   };
@@ -75,4 +79,9 @@ class UpdateCreate extends Component {
   }
 }
 
-export default withStyles(styles)(UpdateCreate);
+const mapStateToProps = (state, ownProps) => {
+  const {userId} = ownProps;
+  const user = getUserById(state, userId);
+  return {user};
+};
+export default withStyles(styles)(connect(mapStateToProps)(UpdateCreate));
